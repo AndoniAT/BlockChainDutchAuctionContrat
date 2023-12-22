@@ -9,7 +9,9 @@
 
 Le projet consiste à créer un Smart Contract (SC) permettant de réaliser une enchère ascendante Hollandaise.
 Une enchère ascendante hollandaise est un document électronique (RFx) [2] qui contient une liste d'articles que des acheteurs veulent vendre. Lors de cette enchère, le prix des articles diminue après des intervalles fixés jusqu'à ce que le prix réservé soit atteint. Avant que le prix réservé soit atteint, si le fournisseur fait une offre pour l'article, celui-ci est attribué à ce fournisseur et l'enchère est clôturée pour l'article.
+
 Dans cette enchère, l'acheteur indique un prix de départ, une valeur de modification de prix, un intervalle de temps entre les modifications de prix et le prix réservé.
+
 L'enchère s'ouvre avec le premier article avec le prix de départ spécifié et diminue selon la valeur de modification de prix (montant ou pourcentage) après un intervalle fixé. Le prix de départ diminue jusqu'à ce qu'un fournisseur fasse une offre ou que le prix de départ atteigne le prix réservé. Une fois l'enchère close pour l'article, l'enchère passe à un autre article de manière séquentielle.
 L'enchère est clôturée lorsque la soumission d'offres pour tous les articles est terminée.
 
@@ -101,8 +103,7 @@ L'enchère est clôturée lorsque la soumission d'offres pour tous les articles 
 Un fois tout installé on peut revenir sur https://trufflesuite.com/docs/truffle/quickstart/ à la partie "Create a projet" pour commencer notre projet
 
 Vous pouvez créer un projet simple sans contrats intelligents à l'aide de truffle init, mais pour ceux qui débutent, vous pouvez utiliser des Truffle Boxes, qui sont des exemples d'applications et de modèles de projet. Nous utiliserons la boîte MetaCoin, qui crée un jeton pouvant être transféré entre comptes. Notez que ce n'est pas compatible ERC-20.
-
-1. Telecharger ("unbox") la boîte MetaCoin :
+-  Telecharger ("unbox") la boîte MetaCoin :
 
 ```
 truffle unbox metacoin [PATH/TO/DIRECTORY]
@@ -118,3 +119,57 @@ truffle.js : fichier de configuration de truffe
 Si vous utilisez VSCode vous pouvez installer l'extention solidity
 ![](./ImagesProject/12_Solidity_extension.png)
 
+Pour executer tous les tests dans test/metacoin.js vous pouvez utiliser la commande :
+
+```
+    truffle test
+```
+![](./ImagesProject/13_Tests_passed.png)
+
+
+Pour compiler le projet
+```
+    truffle compile
+```
+
+4. Ajouter Ganache à Truffle
+    4.1 truffle-config.js
+    Aller vers ce fichier et enlever les commentaires pour development
+    ![](./ImagesProject/14_truffle_config.png)
+
+    4.2 Ajouter truffle config dans ganache
+    ![](./ImagesProject/15_Ajout_truffle_config_a_ganache.png)
+
+    NOTE : Penser à mettre le même port sur votre truffle_config que RPC server sur Ganache
+
+    Cliquer sur "Save and restart"
+
+5. MetaMask networks
+    Ajouter un nouveau réseau dans MetaMask
+
+    ![](./ImagesProject/16_Add_network.png)
+
+
+    ![](./ImagesProject/17_Netword_created.png)
+
+    Cliquer sur click to local
+
+    ![](./ImagesProject/18_Add_account_or_wallet.png)
+
+    Cliquer sur add account or hardwallet
+    et puis cliquer sur "Import account"
+
+    Aller ver ganache et copier une clé privé
+    ![](./ImagesProject/19_Private_key_copy.png)
+
+    Vous devriez la voir apparaître ici
+
+    ![](./ImagesProject/20_Metamask_imported.png)
+
+
+    5. Migration
+        Pour tester la migration on peut utiliser la commande 
+        ```
+            truffle migrate
+        ```
+        ![](./ImagesProject/21_truffle_migrate_test.png)
