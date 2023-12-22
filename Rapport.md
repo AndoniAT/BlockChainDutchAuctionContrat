@@ -173,3 +173,7 @@ Pour compiler le projet
             truffle migrate
         ```
         ![](./ImagesProject/21_truffle_migrate_test.png)
+
+        Après on peut aller vers le site MetaMask et on peuit voir que la valeur a diminué
+
+        ![](./ImagesProject/22_Decreased_value_metamask.png)
