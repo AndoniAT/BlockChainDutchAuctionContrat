@@ -95,3 +95,26 @@ L'enchère est clôturée lorsque la soumission d'offres pour tous les articles 
     Vous devriez avoir cette page :
 
     ![Alt text](./ImagesProject/11_Menu_MetaMask.png)
+
+3. Création du projet
+
+Un fois tout installé on peut revenir sur https://trufflesuite.com/docs/truffle/quickstart/ à la partie "Create a projet" pour commencer notre projet
+
+Vous pouvez créer un projet simple sans contrats intelligents à l'aide de truffle init, mais pour ceux qui débutent, vous pouvez utiliser des Truffle Boxes, qui sont des exemples d'applications et de modèles de projet. Nous utiliserons la boîte MetaCoin, qui crée un jeton pouvant être transféré entre comptes. Notez que ce n'est pas compatible ERC-20.
+
+1. Telecharger ("unbox") la boîte MetaCoin :
+
+```
+truffle unbox metacoin [PATH/TO/DIRECTORY]
+```
+
+Une fois cette opération terminée, vous disposerez désormais d'une structure de projet avec les éléments suivants :
+
+contrats/ : Annuaire des contrats Solidité
+migrations/ : répertoire pour les fichiers de déploiement scriptables
+test/ : Répertoire des fichiers de test pour tester votre application et vos contrats
+truffle.js : fichier de configuration de truffe
+
+Si vous utilisez VSCode vous pouvez installer l'extention solidity
+![](./ImagesProject/12_Solidity_extension.png)
+
