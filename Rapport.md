@@ -177,3 +177,25 @@ Pour compiler le projet
         Après on peut aller vers le site MetaMask et on peuit voir que la valeur a diminué
 
         ![](./ImagesProject/22_Decreased_value_metamask.png)
+
+## ENCHERE HOLLANDAISE
+
+Pour notre enchere hollandaise on a crée un contrat appelé DutchAuction, on a etabli un prix initial de 1 ether et la duration de l'enchere d'une heure.
+Le prix d'un article diminue chaque 60 secondes, après on passe à l'article suivant
+
+Pour executer notre contrat veuillez de faire les commandes suivantes 
+```js
+    truffle compile
+    truffle migrate
+```
+
+Vous devriez voir votre contrat deployé sur Ganache
+![](./ImagesProject/23_Migrate_Contract.png)
+
+### Test
+    Une fois le contrat deployé on vous pouvez executer les test :
+
+```js
+    truffle test
+```
+    
