@@ -198,4 +198,5 @@ Vous devriez voir votre contrat deployé sur Ganache
 ```js
     truffle test
 ```
+![](./ImagesProject/24_Test.png)
     
