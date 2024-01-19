@@ -9,14 +9,17 @@ contract DutchAuction {
     uint public constant STARTING_PRICE = 1 ether; // On declare le prix de debut à 1 ether
     uint public constant PRICE_DECREMENT = 0.1 ether;
     uint public constant RESERVE_PRICE = 0.2 ether;
+    uint public constant INTERVAL = 50 seconds;
+    uint public startBlock;
 
     /** Creation d'une sctructure pour l'article
     Lequel aura un nom, un prix, un gagnant et un status pour savoir s'il est fermé  */
-    struct Article { string name; uint currentPrice; address winningBidder; bool closed; }
+    struct Article { uint id; string name; uint currentPrice; address winningBidder; bool closed; }
 
     // Un tableau d'articles
     Article[] public articles;
 
+    event Log(string message, uint value);
     event BidPlaced(uint indexed articleIndex, address indexed bidder, uint amount);
 
     modifier onlyAuctioneer() {
@@ -37,20 +40,56 @@ contract DutchAuction {
     }
 
     constructor() {
+        startBlock = block.number;
         auctioneer = msg.sender;
         auctionStartTime = block.timestamp;
+        emit Log("CreateContract:", auctionStartTime);
 
         // Creation des articles à notre enchere
-        articles.push(Article("Article 1", STARTING_PRICE, address(0), false));
-        articles.push(Article("Article 2", STARTING_PRICE, address(0), false));
+        articles.push(Article( 1, "Article 1", STARTING_PRICE, address(0), false ) );
+        articles.push(Article( 2, "Article 2", STARTING_PRICE, address(0), false ) );
+        articles.push(Article( 3, "Article 3", STARTING_PRICE, address(0), false ) );
+        articles.push(Article( 4, "Article 4", STARTING_PRICE, address(0), false ) );
+        articles.push(Article( 5, "Article 5", STARTING_PRICE, address(0), false ) );
+        articles.push(Article( 6, "Article 6", STARTING_PRICE, address(0), false ) );
         currentArticleIndex = 0;
     }
 
+    function getArticles() public view returns (Article[] memory) {
+        return articles;
+    }
+
+    function getCurrentArticle() public view returns (Article memory) {
+        return articles[ currentArticleIndex ];
+    }
+
+    function getArticleNames() public view returns (string[] memory) {
+        string[] memory articleNames = new string[](articles.length);
+
+        for (uint i = 0; i < articles.length; i++) {
+            articleNames[i] = articles[i].name;
+        }
+
+        return articleNames;
+    }
+
     function getCurrentPrice() public view returns (uint) {
-        uint elapsedTime = block.timestamp - auctionStartTime;
-        uint decrements = elapsedTime / 60; // Diminue le prix toutes les 60 secondes
+        uint elapsedTime = getElapsedTime();
+        uint decrements = elapsedTime / INTERVAL; // Diminue le prix toutes les 60 secondes
         uint currentPrice = STARTING_PRICE - (PRICE_DECREMENT * decrements);
         return currentPrice > RESERVE_PRICE ? currentPrice : RESERVE_PRICE;
+    }
+
+    function getElapsedTime() public view returns (uint) {
+        return getTimeStamp() - auctionStartTime;
+    }
+
+    function getStartTime() public view returns (uint) {
+        return auctionStartTime;
+    }
+
+    function getTimeStamp() internal view returns (uint) {
+        return block.timestamp;
     }
 
     /**
