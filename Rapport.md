@@ -189,6 +189,21 @@ Pour executer notre contrat veuillez de faire les commandes suivantes
     truffle migrate
 ```
 
+Obtenir des eth test:
+    https://rinkebyfaucet.io
+
+Creation d'une compte infura pour le deploiment sur goerli
+https://app.infura.io
+
+Lier ton metamask a goerli
+https://chainlist.org/?search=goerli&testnets=true
+Chercher pour goerli et connecter avec Metamask
+
+pour la migration sur goerli 
+```js
+   truffle migrate --network goerli 
+```
+
 Vous devriez voir votre contrat deployé sur Ganache
 ![](./ImagesProject/23_Migrate_Contract.png)
 
