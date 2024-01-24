@@ -7,6 +7,7 @@ contract DutchAuction {
     address public auctioneer;
     uint public currentArticleIndex;
     uint public auctionStartTime;
+    uint public startTimeCurrentAuction;
     uint public constant AUCTION_DURATION = 3600 seconds; // Duration de l'enchere => 1 heure
     uint public constant STARTING_PRICE = 1 ether; // On declare le prix de debut à 1 ether
     uint public constant PRICE_DECREMENT = 0.1 ether;
@@ -45,6 +46,7 @@ contract DutchAuction {
         startBlock = block.number;
         auctioneer = msg.sender;
         auctionStartTime = block.timestamp;
+        startTimeCurrentAuction = auctionStartTime;
         emit Log("CreateContract:", auctionStartTime);
 
         // Creation des articles à notre enchere
@@ -132,12 +134,12 @@ contract DutchAuction {
         return currentPrice > RESERVE_PRICE ? currentPrice : RESERVE_PRICE;
     }
 
-    function getElapsedTime() public view returns (uint) {
-        return getTimeStamp() - auctionStartTime;
-    }
-
     function getStartTime() public view returns (uint) {
-        return auctionStartTime;
+        return startTimeCurrentAuction;
+    }
+    
+    function getElapsedTime() public view returns (uint) {
+        return getTimeStamp() - startTimeCurrentAuction;
     }
 
     function getTimeStamp() public view returns (uint) {
@@ -160,29 +162,25 @@ contract DutchAuction {
         Placer une offre 
      */
     function placeBid(uint articleIndex) external payable auctionOpen articleOpen(articleIndex) {
-        uint elapsedTime = block.timestamp - auctionStartTime;
-        uint decrements = elapsedTime / INTERVAL;
-        uint currentPriceCalc = STARTING_PRICE - (PRICE_DECREMENT * decrements);
-        uint calc = currentPriceCalc > RESERVE_PRICE ? currentPriceCalc : RESERVE_PRICE;
-
         require(msg.value > 0, "Le montant de l'enchere doit etre superieur a zero");
 
-        uint currentPrice = calc;
+        uint currentPrice = getCurrentPrice();
         //require(msg.value >= currentPrice, "Le montant de l'enchere est inferieur au prix actuel");
         require(msg.value >= currentPrice, string(abi.encodePacked("Le montant de l'enchere est inferieur au prix actuel time: ", block.timestamp.toString(), ' start : ', auctionStartTime.toString())));
 
 
         //  Si la valeur est > 0 et plus que le prix actuel on etabli le gagnant et on ferme l'article
+        uint now_place = block.timestamp;
+        
         articles[articleIndex].winningBidder = msg.sender;
         articles[articleIndex].closed = true;
-        articles[articleIndex].bought = block.timestamp;
+        articles[articleIndex].bought = now_place;
         articles[articleIndex].boughtFor = msg.value;
-        
         currentArticleIndex++;
         require(currentArticleIndex < articles.length - 1, "Tous les articles ont ete vendus aux encheres");
-
-        articles[currentArticleIndex].currentPrice = getCurrentPrice();
-        articles[currentArticleIndex].closed = false;
+        startTimeCurrentAuction = now_place;
+        //articles[currentArticleIndex].currentPrice = getCurrentPrice();
+        //articles[currentArticleIndex].closed = false;
 
         emit BidPlaced(articleIndex, msg.sender, msg.value);
     }
