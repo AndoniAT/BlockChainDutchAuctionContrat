@@ -188,22 +188,6 @@ Pour executer notre contrat veuillez de faire les commandes suivantes
     truffle compile
     truffle migrate
 ```
-
-Obtenir des eth test:
-    https://rinkebyfaucet.io
-
-Creation d'une compte infura pour le deploiment sur goerli
-https://app.infura.io
-
-Lier ton metamask a goerli
-https://chainlist.org/?search=goerli&testnets=true
-Chercher pour goerli et connecter avec Metamask
-
-pour la migration sur goerli 
-```js
-   truffle migrate --network goerli 
-```
-
 Vous devriez voir votre contrat deployé sur Ganache
 ![](./ImagesProject/23_Migrate_Contract.png)
 
@@ -214,4 +198,12 @@ Vous devriez voir votre contrat deployé sur Ganache
     truffle test
 ```
 ![](./ImagesProject/24_Test.png)
-    
+
+
+=== CLIENT ====
+
+Pour voir la partie du projet coté client web, veuillez aller vers
+
+https://www-apps.univ-lehavre.fr/forge/aa204303/dutch-auction-dapp.git
+
+
