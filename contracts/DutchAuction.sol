@@ -14,12 +14,13 @@ contract DutchAuction {
     /** Creation d'une sctructure pour l'article
     Lequel aura un nom, un prix, un gagnant et un status pour savoir s'il est fermé  */
     struct Article { uint id; string name; uint currentPrice; address winningBidder; bool closed; uint bought; uint boughtFor; }
-    struct Auction { uint id; string name; uint currentArticleIndex; address auctioneer; Article[] articles; uint auctionStartTime; uint startTimeCurrentAuction; }
+    struct Auction { uint id; string name; uint currentArticleIndex; address auctioneer; Article[] articles; uint auctionStartTime; uint startTimeCurrentAuction; bool closed; }
 
     Auction[] public auctions;
 
     event Log(string message, uint value);
     event BidPlaced(uint indexed articleIndex, address indexed bidder, uint amount);
+    event AuctionClosed(uint indexed auctionIndex);
 
     /*modifier onlyAuctioneer() {
         require(msg.sender == auctioneer, "Seul le auctioneer peut appeler cette fonction");
@@ -48,13 +49,13 @@ contract DutchAuction {
         s[1] = "Article 2";
         s[2] = "Article 3";
         s[3] = "Article 4";
-        createAuction("Auction 1", s);
+        createAuction("Auction 1", s, false);
         
         string[] memory s2 = new string[](3);
         s2[0] = "Chemise";
         s2[1] = "PC";
         s2[2] = "Valise";
-        createAuction("Auction 2", s2);
+        createAuction("Auction 2", s2, false);
     }
 
     function getArticles(uint auctionIndex) public view returns (Article[] memory) {
@@ -77,27 +78,102 @@ contract DutchAuction {
 
     function getOpenArticles(uint auctionIndex) public view returns (Article[] memory) {
         uint openArticleCount = 0;
+        if(!auctions[auctionIndex].closed) {
+            // Compter le nombre d'articles ouverts
+            for (uint i = 0; i < auctions[auctionIndex].articles.length; i++) {
+                if (!auctions[auctionIndex].articles[i].closed) {
+                    openArticleCount++;
+                }
+            }
 
-        // Compter le nombre d'articles ouverts
-        for (uint i = 0; i < auctions[auctionIndex].articles.length; i++) {
-            if (!auctions[auctionIndex].articles[i].closed) {
-                openArticleCount++;
+            // Créer un tableau de la taille appropriée pour les articles ouverts
+            Article[] memory openArticles = new Article[](openArticleCount);
+
+            // Remplir le tableau avec les articles ouverts
+            uint index = 0;
+            for (uint i = 0; i < auctions[auctionIndex].articles.length; i++) {
+                if (!auctions[auctionIndex].articles[i].closed) {
+                    openArticles[index] = auctions[auctionIndex].articles[i];
+                    index++;
+                }
+            }
+
+            return openArticles;
+
+        } else {
+            Article[] memory openArticles = new Article[](0);
+            return openArticles;
+        }
+    }
+
+    function getOpenAuctions() public view returns (Auction[] memory) {
+        uint openAuctionCount = 0;
+        
+        // Compter le nombre d'encheres ouverts
+        for (uint i = 0; i < auctions.length; i++) {
+            if (!auctions[i].closed) {
+                openAuctionCount++;
             }
         }
 
-        // Créer un tableau de la taille appropriée pour les articles ouverts
-        Article[] memory openArticles = new Article[](openArticleCount);
+        // Créer un tableau de la taille appropriée pour les encheres ouverts
+        Auction[] memory openAuctions = new Auction[](openAuctionCount);
 
-        // Remplir le tableau avec les articles ouverts
+        // Remplir le tableau avec les encheres ouverts
         uint index = 0;
-        for (uint i = 0; i < auctions[auctionIndex].articles.length; i++) {
-            if (!auctions[auctionIndex].articles[i].closed) {
-                openArticles[index] = auctions[auctionIndex].articles[i];
+        for (uint i = 0; i < auctions.length; i++) {
+            if (!auctions[i].closed) {
+                openAuctions[index] = auctions[i];
                 index++;
             }
         }
+        return openAuctions;
+    }
 
-        return openArticles;
+    function getAuctionsFor(address auctioneer) public view returns (Auction[] memory) {
+        uint auctionForCount = 0;
+        
+        // Compter le nombre d'encheres du proprietaire
+        for (uint i = 0; i < auctions.length; i++) {
+            if (auctions[i].auctioneer == auctioneer) {
+                auctionForCount++;
+            }
+        }
+        Auction[] memory auctionsFor = new Auction[](auctionForCount);
+
+        // Remplir le tableau
+        uint index = 0;
+        for (uint i = 0; i < auctions.length; i++) {
+            if (auctions[i].auctioneer == auctioneer) {
+                auctionsFor[index] = auctions[i];
+                index++;
+            }
+        }
+        return auctionsFor;
+    }
+
+    function getClosedAuctions() public view returns (Auction[] memory) {
+        uint closedAuctionCount = 0;
+        
+        // Compter le nombre d'encheres fermes
+        for (uint i = 0; i < auctions.length; i++) {
+            if (auctions[i].closed) {
+                closedAuctionCount++;
+            }
+        }
+
+        // Créer un tableau de la taille appropriée pour les encheres fermes
+        Auction[] memory closedAuctions = new Auction[](closedAuctionCount);
+
+        // Remplir le tableau avec les encheres fermes
+        uint index = 0;
+        for (uint i = 0; i < auctions.length; i++) {
+            if (auctions[i].closed) {
+                closedAuctions[index] = auctions[i];
+                index++;
+            }
+        }
+        return closedAuctions;
     }
 
     function getClosedArticles(uint auctionIndex) public view returns (Article[] memory) {
@@ -179,31 +255,35 @@ contract DutchAuction {
         
         if(auctions[auctionIndex].currentArticleIndex < auctions[auctionIndex].articles.length) {
             auctions[auctionIndex].startTimeCurrentAuction = now_place;
+        }else {
+            auctions[auctionIndex].closed = true;    
         }
 
         emit BidPlaced(articleIndex, msg.sender, msg.value);
     }
 
+    function closeAuction( uint auctionIndex ) public {
+        auctions[auctionIndex].closed = true;
+        emit AuctionClosed(auctionIndex);
+    }
+
+    function openAuction( uint auctionIndex ) public {
+        uint openArticlesCount = 0;
+        for(uint i = 0 ; i < auctions[auctionIndex].articles.length; i++) {
+            if(!auctions[auctionIndex].articles[i].closed) openArticlesCount++;
+        }
+
+        require(openArticlesCount > 0, "Tous les articles sont deja fermes");
+        auctions[auctionIndex].closed = false;
+        auctions[auctionIndex].auctionStartTime = block.timestamp;
+        auctions[auctionIndex].startTimeCurrentAuction = auctions[auctionIndex].auctionStartTime;
+        emit AuctionClosed(auctionIndex);
+    }
+
     /**
         Creer un enchere
      */
-    /*function createAuction(string memory name, string[] memory  articles ) external {
-        uint id = auctions.length;
-        address auctioneer = msg.sender;
-        uint auctionStartTime = block.timestamp;
-        uint startTimeCurrentAuction = auctionStartTime;
-        Article[] storage articlesFinal = auctions[id].articles;
-
-
-        for (uint i = 0; i < articles.length; i++) {
-            articlesFinal.push(Article( i, articles[i], STARTING_PRICE, address(0), false, 0, 0 ether ));
-        }
-
-        auctions.push(Auction(id, name, 0, auctioneer, articlesFinal, auctionStartTime, startTimeCurrentAuction));
-        emit Log("Create Auction:", auctionStartTime);
-    }*/
-
-    function createAuction(string memory name, string[] memory articles) public {
+    function createAuction(string memory name, string[] memory articles, bool closed) public {
         uint id = auctions.length;
         address auctioneer = msg.sender;
         uint auctionStartTime = block.timestamp;
@@ -217,6 +297,7 @@ contract DutchAuction {
         newAuction.auctioneer = auctioneer;
         newAuction.auctionStartTime = auctionStartTime;
         newAuction.startTimeCurrentAuction = startTimeCurrentAuction;
+        newAuction.closed = closed;
 
         // Ajouter chaque élément du tableau d'articles en mémoire au tableau en stockage
         for (uint i = 1; i <= articles.length; i++) {
