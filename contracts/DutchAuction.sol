@@ -166,7 +166,7 @@ contract DutchAuction {
         uint currentPrice = getCurrentPrice( auctionIndex );
         //require(msg.value >= currentPrice, "Le montant de l'enchere est inferieur au prix actuel");
         require(msg.value >= currentPrice, string(abi.encodePacked("Le montant de l'enchere est inferieur au prix actuel time: ", block.timestamp.toString(), ' start : ', auctions[auctionIndex].auctionStartTime.toString())));
-
+        require( auctions[auctionIndex].currentArticleIndex < auctions[auctionIndex].articles.length, "Tous les articles ont ete vendus aux encheres" );
 
         //  Si la valeur est > 0 et plus que le prix actuel on etabli le gagnant et on ferme l'article
         uint now_place = block.timestamp;
@@ -176,8 +176,10 @@ contract DutchAuction {
         auctions[auctionIndex].articles[articleIndex].bought = now_place;
         auctions[auctionIndex].articles[articleIndex].boughtFor = msg.value;
         auctions[auctionIndex].currentArticleIndex++;
-        require(auctions[auctionIndex].currentArticleIndex < auctions[auctionIndex].articles.length - 1, "Tous les articles ont ete vendus aux encheres");
-        auctions[auctionIndex].startTimeCurrentAuction = now_place;
+        
+        if(auctions[auctionIndex].currentArticleIndex < auctions[auctionIndex].articles.length) {
+            auctions[auctionIndex].startTimeCurrentAuction = now_place;
+        }
 
         emit BidPlaced(articleIndex, msg.sender, msg.value);
     }
@@ -211,6 +213,7 @@ contract DutchAuction {
         Auction storage newAuction = auctions.push();
         newAuction.id = id;
         newAuction.name = name;
+        newAuction.currentArticleIndex = 0;
         newAuction.auctioneer = auctioneer;
         newAuction.auctionStartTime = auctionStartTime;
         newAuction.startTimeCurrentAuction = startTimeCurrentAuction;
