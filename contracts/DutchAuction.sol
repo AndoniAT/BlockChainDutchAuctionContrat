@@ -8,13 +8,26 @@ contract DutchAuction {
     uint public constant STARTING_PRICE = 1 ether; // On declare le prix de debut à 1 ether
     uint public constant PRICE_DECREMENT = 0.1 ether;
     uint public constant RESERVE_PRICE = 0.2 ether;
-    uint public constant INTERVAL = 50 seconds;
+    uint public constant INTERVAL = 50 seconds; // Diminue le prix toutes les 50 secondes
     uint public startBlock;
 
     /** Creation d'une sctructure pour l'article
     Lequel aura un nom, un prix, un gagnant et un status pour savoir s'il est fermé  */
     struct Article { uint id; string name; uint currentPrice; address winningBidder; bool closed; uint bought; uint boughtFor; }
-    struct Auction { uint id; string name; uint currentArticleIndex; address auctioneer; Article[] articles; uint auctionStartTime; uint startTimeCurrentAuction; bool closed; }
+    struct Auction { 
+        uint id; 
+        string name; 
+        uint currentArticleIndex; 
+        address auctioneer; Article[] articles; 
+        uint auctionStartTime; 
+        uint startTimeCurrentAuction; 
+        bool closed;
+        uint auction_duration;
+        uint starting_price;
+        uint price_decrement;
+        uint reserve_price;
+        uint interval;
+    }
 
     Auction[] public auctions;
 
@@ -29,7 +42,7 @@ contract DutchAuction {
 
     modifier auctionOpen(uint auctionIndex) {
         require(block.timestamp >= auctions[auctionIndex].auctionStartTime, "L'enchere n'a pas encore commence");
-        require(block.timestamp < auctions[auctionIndex].auctionStartTime + AUCTION_DURATION, "L'enchere est terminee");
+        require(block.timestamp < auctions[auctionIndex].auctionStartTime + auctions[auctionIndex].auction_duration, "L'enchere est terminee");
         _;
     }
 
@@ -49,13 +62,13 @@ contract DutchAuction {
         s[1] = "Article 2";
         s[2] = "Article 3";
         s[3] = "Article 4";
-        createAuction("Auction 1", s, false);
+        createAuction("Auction 1", s, false, AUCTION_DURATION, STARTING_PRICE, PRICE_DECREMENT, RESERVE_PRICE, INTERVAL);
         
         string[] memory s2 = new string[](3);
         s2[0] = "Chemise";
         s2[1] = "PC";
         s2[2] = "Valise";
-        createAuction("Auction 2", s2, false);
+        createAuction("Auction 2", s2, false, AUCTION_DURATION, STARTING_PRICE, PRICE_DECREMENT, RESERVE_PRICE, INTERVAL);
     }
 
     function getArticles(uint auctionIndex) public view returns (Article[] memory) {
@@ -63,6 +76,7 @@ contract DutchAuction {
     }
 
     function getCurrentArticle(uint auctionIndex) public view returns (Article memory) {
+        require( auctions[auctionIndex].currentArticleIndex < auctions[auctionIndex].articles.length, "Tous les articles on ete vendus" );
         return auctions[auctionIndex].articles[ auctions[auctionIndex].currentArticleIndex ];
     }
 
@@ -203,9 +217,9 @@ contract DutchAuction {
 
     function getCurrentPrice( uint auctionIndex ) public view returns (uint) {
         uint elapsedTime = getElapsedTime( auctionIndex );
-        uint decrements = elapsedTime / INTERVAL; // Diminue le prix toutes les 60 secondes
-        uint currentPrice = STARTING_PRICE - (PRICE_DECREMENT * decrements);
-        return currentPrice > RESERVE_PRICE ? currentPrice : RESERVE_PRICE;
+        uint decrements = elapsedTime / auctions[auctionIndex].interval;
+        uint currentPrice = auctions[auctionIndex].starting_price - (auctions[auctionIndex].price_decrement * decrements);
+        return currentPrice > auctions[auctionIndex].reserve_price ? currentPrice : auctions[auctionIndex].reserve_price;
     }
 
     function getStartTime(uint auctionIndex) public view returns (uint) {
@@ -283,7 +297,7 @@ contract DutchAuction {
     /**
         Creer un enchere
      */
-    function createAuction(string memory name, string[] memory articles, bool closed) public {
+    function createAuction(string memory name, string[] memory articles, bool closed, uint auction_duration, uint starting_price, uint price_decrement, uint reserve_price, uint interval) public {
         uint id = auctions.length;
         address auctioneer = msg.sender;
         uint auctionStartTime = block.timestamp;
@@ -298,10 +312,18 @@ contract DutchAuction {
         newAuction.auctionStartTime = auctionStartTime;
         newAuction.startTimeCurrentAuction = startTimeCurrentAuction;
         newAuction.closed = closed;
+        
+        // Parametres
+        newAuction.auction_duration = auction_duration;
+        newAuction.starting_price = starting_price;
+        newAuction.price_decrement = price_decrement;
+        newAuction.reserve_price = reserve_price;
+        newAuction.interval = interval;
+
 
         // Ajouter chaque élément du tableau d'articles en mémoire au tableau en stockage
         for (uint i = 1; i <= articles.length; i++) {
-            newAuction.articles.push(Article( i, articles[i-1], STARTING_PRICE, address(0), false, 0, 0 ether ));
+            newAuction.articles.push(Article( i, articles[i-1], starting_price, address(0), false, 0, 0 ether ));
         }
 
         emit Log("Create Auction:", auctionStartTime);
