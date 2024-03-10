@@ -200,10 +200,4 @@ Vous devriez voir votre contrat deployé sur Ganache
 ![](./ImagesProject/24_Test.png)
 
 
-=== CLIENT ====
-
-Pour voir la partie du projet coté client web, veuillez aller vers
-
-https://www-apps.univ-lehavre.fr/forge/aa204303/dutch-auction-dapp.git
-
 

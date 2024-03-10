@@ -4,11 +4,6 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract DutchAuction {
     using Strings for uint256;
-    uint public constant AUCTION_DURATION = 3600 seconds; // Duration de l'enchere => 1 heure
-    uint public constant STARTING_PRICE = 1 ether; // On declare le prix de debut à 1 ether
-    uint public constant PRICE_DECREMENT = 0.1 ether;
-    uint public constant RESERVE_PRICE = 0.2 ether;
-    uint public constant INTERVAL = 50 seconds; // Diminue le prix toutes les 50 secondes
     uint public startBlock;
 
     /** Creation d'une sctructure pour l'article
@@ -35,10 +30,6 @@ contract DutchAuction {
     event BidPlaced(uint indexed articleIndex, address indexed bidder, uint amount);
     event AuctionClosed(uint indexed auctionIndex);
 
-    /*modifier onlyAuctioneer() {
-        require(msg.sender == auctioneer, "Seul le auctioneer peut appeler cette fonction");
-        _;
-    }*/
 
     modifier auctionOpen(uint auctionIndex) {
         require(block.timestamp >= auctions[auctionIndex].auctionStartTime, "L'enchere n'a pas encore commence");
@@ -62,13 +53,13 @@ contract DutchAuction {
         s[1] = "Article 2";
         s[2] = "Article 3";
         s[3] = "Article 4";
-        createAuction("Auction 1", s, false, AUCTION_DURATION, STARTING_PRICE, PRICE_DECREMENT, RESERVE_PRICE, INTERVAL);
+        createAuction("Auction 1", s, false, 3600 seconds, 1 ether, 0.1 ether, 0.2 ether, 50 seconds);
         
         string[] memory s2 = new string[](3);
         s2[0] = "Chemise";
         s2[1] = "PC";
         s2[2] = "Valise";
-        createAuction("Auction 2", s2, false, AUCTION_DURATION, STARTING_PRICE, PRICE_DECREMENT, RESERVE_PRICE, INTERVAL);
+        createAuction("Auction 2", s2, false, 3600 seconds, 1 ether, 0.1 ether, 0.2 ether, 50 seconds);
     }
 
     function getArticles(uint auctionIndex) public view returns (Article[] memory) {
